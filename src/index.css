@@ -85,6 +85,12 @@
     border-radius: 8px;
 }
 
+@media (max-width: 538px) {
+  .pagination-container a {
+    @apply h-[30px] ml-2 min-w-[32px] text-[14px] px-0
+  }
+}
+
 .pagination-container a.active {
     background-color: #068FFF;
     color: white;

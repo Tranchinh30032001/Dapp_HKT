@@ -28,10 +28,11 @@ function BodyQuest() {
   };
 
   return (
-    <div className="container">
+    <div className="container overflow-hidden">
       <h1 className="px-2 text-[20px] md:text-[30px] text-white border-b-2 border-[#0E21A0] mb-12 pb-2">Campaign</h1>
-      <div className="px-2 grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="px-2 grid grid-cols-1 md:grid-cols-4 gap-4 justify-center items-center max-w-[300px] md:max-w-max mx-auto">
         {currentData?.map((item, index) => {
+          console.log({ item });
           return <Card {...item} key={index} />;
         })}
       </div>
