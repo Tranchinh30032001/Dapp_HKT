@@ -98,6 +98,7 @@ function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQues
         setSeconds(s);
 
         if (d <= 0 && h <= 0 && m <= 0 && s <= 0) {
+          setIsPrize(true);
           setPartyTime(true);
         }
       }, 1000);
@@ -106,11 +107,11 @@ function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQues
   }, []);
 
   const handlePrize = async () => {
-    setIsPrize(true);
     const res = await instanceAxios.get("https://64bf79be5ee688b6250d7c34.mockapi.io/api/table-data/campaign");
     if (res.status === 200) {
       alpheReward.signAndSend([listLuckyMembers]);
     }
+    setIsPrize(false);
   };
 
   return (
@@ -136,7 +137,7 @@ function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQues
           <p className="text-white text-[18px] md:text-[32px]">Seconds</p>
         </div>
       </div>
-      {isDetail && !isPrize && (
+      {isDetail && isPrize && (
         <Button
           onClick={handlePrize}
           className="bg-[#279EFF] text-white text-[12px] px-4 md:text-[18px] font-semibold md:px-8 md:py-6 flex items-center border-none outline-none hover:bg-none mx-auto mt-4"
