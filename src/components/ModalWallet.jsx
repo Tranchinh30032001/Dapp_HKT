@@ -18,8 +18,14 @@ export const ModalWallet = ({ setIsModal }) => {
         wallet_name: account?.name,
       };
 
-      hocApiPost(routes.authentication.walletRegister, body)();
-      hocApiPost(routes.authentication.walletLogin, body)();
+      try {
+        hocApiPost(routes.authentication.walletRegister, body)();
+        hocApiPost(routes.authentication.walletLogin, body)().then((res) => {
+          localStorage.setItem("token", res.data.token);
+        });
+      } catch (error) {
+        throw new Error(error);
+      }
     }
   }, [account?.address]);
 

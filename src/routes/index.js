@@ -6,6 +6,7 @@ export const routes = {
     quest: {
         getCollection: "/api/campains",
         createCampaign: "/api/campains",
-        getDetailCampaign: (id) =>  `/api/campains/${id}`
+        getDetailCampaign: (id) =>  `/api/campains/${id}`,
+        updateDetailCampaign: (id) =>  `/api/campains/${id}`
     }
 }

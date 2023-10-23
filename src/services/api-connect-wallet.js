@@ -2,21 +2,17 @@ import axios from "axios"
 
 export const instanceAxios = axios.create({
     baseURL: "https://plats-quest.vaix.group",
-    timeout: 12000,
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer 13|ExM3jJd1fP9lsYI0cP3qsktFZfcSHRltQEnD76akd952ae2a"
-    }
+    timeout: 30000,
 })
 
 instanceAxios.interceptors.request.use(
     function (config) {
         document.body.classList.add("loading-indicator");
-        // const accessToken = TokenService.getLocalAccessToken();
-        // if (accessToken) {
-        //     config.headers["Content-Type"] = "application/json";
-        //     config.headers["Authorization"] = `Bearer ${accessToken}`;
-        // }
+        const accessToken = localStorage.getItem("token");
+        if (accessToken) {
+            config.headers["Content-Type"] = "application/json";
+            config.headers["Authorization"] = `Bearer ${accessToken}`;
+        }
         return config;
     },
     function (error) {

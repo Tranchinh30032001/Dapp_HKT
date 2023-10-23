@@ -26,7 +26,7 @@
   }
   .truncate-text {
   display: -webkit-box;
-  -webkit-line-clamp: 5; /* Số dòng bạn muốn hiển thị trước khi cắt */
+  -webkit-line-clamp: 4; /* Số dòng bạn muốn hiển thị trước khi cắt */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

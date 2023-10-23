@@ -5,7 +5,7 @@ function Card({ featured_image, name, content, id, status }) {
     <Link to={`detail/${id}`} className="max-w-[300px]">
       <div className="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
         <div className="shadow-lg">
-          <img className="rounded-t-lg object-cover" src={featured_image} alt="" />
+          <img className="rounded-t-lg object-cover h-[200px]" src={featured_image} alt="" />
         </div>
         <div className="p-5 relative">
           <div>
@@ -13,14 +13,14 @@ function Card({ featured_image, name, content, id, status }) {
               {name}
             </h5>
           </div>
-          <p className="mb-3 font-normal text-gray-700 dark:text-gray-400 h-[60px] md:h-[120px] overflow-hidden truncate-text">
+          <p className="mb-5 font-normal text-gray-700 dark:text-gray-400 h-[50px] md:h-[100px] overflow-hidden truncate-text">
             {content}
           </p>
           <div
             style={{
               backgroundColor: status === "Draft" ? "#BB2525" : "#54B435",
             }}
-            className="absolute bottom-4 right-2 px-5 py-1 rounded-full text-white"
+            className="absolute bottom-2 right-2 px-5 py-1 rounded-full text-white"
           >
             {status}
           </div>

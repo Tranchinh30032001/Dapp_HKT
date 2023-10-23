@@ -1,5 +1,5 @@
 import { Input, message } from "antd";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DatePicker, Button } from "antd";
 import { ToastContainer } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,7 @@ import { FaUpload } from "react-icons/fa";
 import { Upload } from "../asset/img";
 import { callApiCreate } from "../services/callApiCreate";
 import { useLocation, useNavigate } from "react-router-dom";
+import { checkLogin } from "../utils/checkLogin";
 
 const IMAGE_MAX_SIZE = 5000000;
 
@@ -18,15 +19,17 @@ function Setup({ setValue, setValueSetup, data }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isDetail = location.pathname.includes("detail");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // const isDetail = false;
+  const [title, setTitle] = useState(data?.title || "");
+  const [description, setDescription] = useState(data?.description || "");
+  const [startDate, setStartDate] = useState(data?.startDate || "");
+  const [endDate, setEndDate] = useState(data?.endDate || "");
   const { stateSetup } = useSelector((state) => state.stateCampaign);
   const [urlThumbnail, setUrlThumbnail] = useState("");
   const [rejected, setRejected] = useState([]);
   const [base64Thumbnail, setBase64Thumbnail] = useState("");
   const dispatch = useDispatch();
+  const [isEdit, setIsEdit] = useState(false);
 
   const handleStartDate = (date) => {
     setStartDate(date.$d);
@@ -83,12 +86,48 @@ function Setup({ setValue, setValueSetup, data }) {
   };
 
   const handleSave = async () => {
+    if (!checkLogin()) {
+      notifyError("Please connect wallet first");
+      return;
+    }
     if (title && description && startDate && endDate) {
       const res = await callApiCreate({ title, description, startDate, endDate, base64Thumbnail });
       if (res.data.status === "success") {
         navigate("/campaign");
         dispatch(setSaveSuccess(true));
       }
+    } else {
+      notifyError("Please complete all information !");
+    }
+  };
+
+  const handleEdit = () => {
+    if (isEdit) {
+      handleNext();
+    } else {
+      setIsEdit(true);
+    }
+  };
+
+  useEffect(() => {
+    setTitle(data?.title);
+    setDescription(data?.description);
+    setEndDate(data?.endDate);
+    setStartDate(data?.startDate);
+    setUrlThumbnail(data?.urlThumbnail);
+  }, [data?.title]);
+
+  const handleCheckDisable = () => {
+    if (isDetail) {
+      if (isEdit) {
+        return false;
+      }
+      return true;
+    } else {
+      if (stateSetup) {
+        return true;
+      }
+      return false;
     }
   };
 
@@ -100,8 +139,8 @@ function Setup({ setValue, setValueSetup, data }) {
             Title
           </label>
           <Input
-            disabled={stateSetup || isDetail}
-            value={data?.title || title}
+            disabled={handleCheckDisable()}
+            value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="!leading-9 md:leading-[50px] placeholder:text-[18px] text-[18px]"
           />
@@ -112,8 +151,8 @@ function Setup({ setValue, setValueSetup, data }) {
             Description
           </label>
           <Input.TextArea
-            disabled={stateSetup || isDetail}
-            value={data?.description || description}
+            disabled={handleCheckDisable()}
+            value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
           />
@@ -123,8 +162,8 @@ function Setup({ setValue, setValueSetup, data }) {
           <div className="w-full">
             <label className="block heading">Start Date</label>
             <DatePicker
-              disabled={stateSetup || isDetail}
-              value={data?.startDate && dayjs(data?.startDate)}
+              disabled={handleCheckDisable()}
+              value={startDate ? dayjs(startDate) : ""}
               onChange={handleStartDate}
               size="large"
               className="w-full p-3"
@@ -133,8 +172,8 @@ function Setup({ setValue, setValueSetup, data }) {
           <div className="w-full">
             <label className="block heading">End Date</label>
             <DatePicker
-              disabled={stateSetup || isDetail}
-              value={data?.endDate && dayjs(data?.endDate)}
+              disabled={handleCheckDisable()}
+              value={endDate ? dayjs(endDate) : ""}
               onChange={handleEndDate}
               size="large"
               className="w-full p-3 text-white"
@@ -162,14 +201,25 @@ function Setup({ setValue, setValueSetup, data }) {
               </div>
             )}
             <div>
-              <img src={data?.urlThumbnail || urlThumbnail} className="object-contain max-h-[300px] md:max-h-[360px]" />
+              <img src={urlThumbnail} className="object-contain max-h-[300px] md:max-h-[360px]" />
             </div>
           </div>
-          {(stateSetup || isDetail) && <div className="absolute inset-0 z-50"></div>}
+          {handleCheckDisable() && <div className="absolute inset-0 z-50"></div>}
         </div>
       </div>
 
-      {!isDetail ? (
+      {/* nếu không phải là màn detail */}
+      {isDetail ? (
+        data?.status === "Draft" && (
+          <button
+            onClick={handleEdit}
+            style={{ backgroundColor: isEdit ? "#279EFF" : "#D83F31" }}
+            className="hover:bg-opacity-60 text-white font-medium md:font-bold py-2 px-4 md:py-3 md:px-8 rounded relative left-[50%] -translate-x-[50%] mt-4 md:mt-8 text-[16px] md:text-[20px]"
+          >
+            {isEdit ? "Save" : "Edit"}
+          </button>
+        )
+      ) : (
         <>
           <button
             style={{ display: !stateSetup ? "none" : "" }}
@@ -197,8 +247,6 @@ function Setup({ setValue, setValueSetup, data }) {
             </button>
           </div>
         </>
-      ) : (
-        ""
       )}
 
       <ToastContainer />

@@ -1,8 +1,8 @@
 import { routes } from "../routes";
-import Card from "./Card";
 import useGetApi from "../utils/hooks/useGetApi";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Pagination from "./common/Panigation";
+const Card = lazy(() => import("./Card"));
 
 const NUMBER_ITEM_PAGE = 8;
 
@@ -30,12 +30,13 @@ function BodyQuest() {
   return (
     <div className="container overflow-hidden">
       <h1 className="px-2 text-[20px] md:text-[30px] text-white border-b-2 border-[#0E21A0] mb-12 pb-2">Campaign</h1>
-      <div className="px-2 grid grid-cols-1 md:grid-cols-4 gap-4 justify-center items-center max-w-[300px] md:max-w-max mx-auto">
-        {currentData?.map((item, index) => {
-          console.log({ item });
-          return <Card {...item} key={index} />;
-        })}
-      </div>
+      <Suspense fallback={<div>loading...</div>}>
+        <div className="px-2 grid grid-cols-1 md:grid-cols-4 gap-4 justify-center items-center max-w-[300px] md:max-w-max mx-auto">
+          {currentData?.map((item, index) => {
+            return <Card {...item} key={index} />;
+          })}
+        </div>
+      </Suspense>
 
       <div className="mt-12 mb-4">
         {currentData?.length > 0 && (

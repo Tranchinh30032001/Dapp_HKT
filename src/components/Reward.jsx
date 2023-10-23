@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setResetReward, setSaveSuccess, setStateReward } from "../redux/stateCampaign";
 import { callApiCreate } from "../services/callApiCreate";
 import { useLocation, useNavigate } from "react-router-dom";
+import { checkLogin } from "../utils/checkLogin";
 
 function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
   const [rewardType, setRewardType] = useState(data?.rewardType || "Token");
@@ -16,6 +17,7 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
   const [totalReward, setTotalReward] = useState(data?.totalReward || "");
   const [numberWinner, setNumberWinner] = useState(data?.numberWinner || 1);
   const { stateReward, resetReward } = useSelector((state) => state.stateCampaign);
+  const [isEdit, setIsEdit] = useState(false);
   const isDetail = useLocation().pathname.includes("detail");
 
   const navigate = useNavigate();
@@ -55,7 +57,11 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
   };
 
   const handleSave = async () => {
-    const res = callApiCreate(valueSetup, valueQuest, {
+    if (!checkLogin()) {
+      notifyError("Please connect wallet first");
+      return;
+    }
+    const res = await callApiCreate(valueSetup, valueQuest, {
       rewardType,
       network,
       categoryToken,
@@ -67,7 +73,26 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
       dispatch(setSaveSuccess(true));
     }
   };
-
+  const handleCheckDisable = () => {
+    if (isDetail) {
+      if (isEdit) {
+        return false;
+      }
+      return true;
+    } else {
+      if (stateReward) {
+        return true;
+      }
+      return false;
+    }
+  };
+  const handleEdit = () => {
+    if (isEdit) {
+      handleNext();
+    } else {
+      setIsEdit(true);
+    }
+  };
   return (
     <div className="">
       <div className="py-2 px-4 md:py-6 md:px-8 rounded-lg border-[1px] border-[#279EFF]">
@@ -75,7 +100,7 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
           <div className="w-full">
             <label className="heading">Network</label>
             <Select
-              disabled={stateReward || isDetail}
+              disabled={handleCheckDisable()}
               className="w-full h-[40px] md:!h-[54px]"
               size="large"
               defaultValue={network}
@@ -100,7 +125,7 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
             <label className="heading">Reward Type</label>
             <Select
               value={rewardType}
-              disabled={stateReward || isDetail}
+              disabled={handleCheckDisable()}
               className="w-full h-[40px] md:!h-[54px]"
               size="middle"
               onChange={setRewardType}
@@ -115,7 +140,7 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
             <label className="heading">Category Token</label>
             <Select
               value={categoryToken}
-              disabled={stateReward || isDetail}
+              disabled={handleCheckDisable()}
               className="w-full h-[40px] md:!h-[54px]"
               size="large"
               onChange={setCategoryToken}
@@ -138,7 +163,7 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
         <div className="mt-2 md:mt-5">
           <label className="heading">Total Reward</label>
           <Input
-            disabled={stateReward || isDetail}
+            disabled={handleCheckDisable()}
             value={totalReward}
             onChange={(e) => setTotalReward(e.target.value)}
             placeholder="0"
@@ -149,7 +174,7 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
         <div className="mt-5">
           <label className="heading">Number Of Winner</label>
           <Input
-            disabled={stateReward || isDetail}
+            disabled={handleCheckDisable()}
             value={numberWinner}
             onChange={(e) => setNumberWinner(e.target.value)}
             type="number"
@@ -167,7 +192,17 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
           />
         </div>
       </div>
-      {!isDetail ? (
+      {isDetail ? (
+        data?.status === "Draft" && (
+          <button
+            onClick={handleEdit}
+            style={{ backgroundColor: isEdit ? "#279EFF" : "#D83F31" }}
+            className="hover:bg-opacity-60 text-white font-medium md:font-bold py-2 px-4 md:py-3 md:px-8 rounded relative left-[50%] -translate-x-[50%] mt-4 md:mt-8 text-[16px] md:text-[20px]"
+          >
+            {isEdit ? "Save" : "Edit"}
+          </button>
+        )
+      ) : (
         <>
           {" "}
           <button
@@ -195,8 +230,6 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
             </button>
           </div>
         </>
-      ) : (
-        ""
       )}
       <ToastContainer />
     </div>

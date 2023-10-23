@@ -13,12 +13,13 @@ import { setResetQuest, setSaveSuccess, setStateQuest } from "../redux/stateCamp
 import { useSelector } from "react-redux";
 import { callApiCreate } from "../services/callApiCreate";
 import { useLocation, useNavigate } from "react-router-dom";
+import { checkLogin } from "../utils/checkLogin";
 
 const ActiosTwitter = ["Follow", "Retweet", "Like", "Hashtag"];
 const ActionWeb3 = ["Token Holder", "Transaction Activity"];
 
 function Quest({ setValue, valueSetup, setValueQuest, data }) {
-  const location = useLocation();
+  const isDetail = useLocation().pathname.includes("detail");
   const countRef = useRef(1);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -30,6 +31,7 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
     Like: false,
     Hashtag: false,
   });
+  const [isEdit, setIsEdit] = useState(false);
 
   const [activeTemplate, setActiveTemplate] = useState({
     TokenHolder: false,
@@ -112,6 +114,10 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
   };
 
   const handleSave = async () => {
+    if (!checkLogin()) {
+      notifyError("Please connect wallet first");
+      return;
+    }
     const res = await callApiCreate(valueSetup, {
       twitterFollow: follow,
       twitterRetweet: retweet,
@@ -124,6 +130,28 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
     if (res.data.status === "success") {
       navigate("/campaign");
       dispatch(setSaveSuccess(true));
+    }
+  };
+
+  const handleCheckDisable = () => {
+    if (isDetail) {
+      if (isEdit) {
+        return false;
+      }
+      return true;
+    } else {
+      if (stateQuest) {
+        return true;
+      }
+      return false;
+    }
+  };
+
+  const handleEdit = () => {
+    if (isEdit) {
+      handleNext();
+    } else {
+      setIsEdit(true);
     }
   };
 
@@ -147,22 +175,37 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
       </div>
       <div className="px-2 md:px-0">
         {activeTwitter.Follow || data?.twitterFollow ? (
-          <Follow setFollow={setFollow} setActionTwitter={setActionTwitter} value={follow} isDisable={stateQuest} />
+          <Follow
+            setFollow={setFollow}
+            setActionTwitter={setActionTwitter}
+            value={follow}
+            isDisable={handleCheckDisable()}
+          />
         ) : (
           ""
         )}{" "}
         {activeTwitter.Retweet || data?.twitterRetweet ? (
-          <Retweet setRetweet={setRetweet} setActionTwitter={setActionTwitter} value={retweet} isDisable={stateQuest} />
+          <Retweet
+            setRetweet={setRetweet}
+            setActionTwitter={setActionTwitter}
+            value={retweet}
+            isDisable={handleCheckDisable()}
+          />
         ) : (
           ""
         )}
         {activeTwitter.Like || data?.twitterLike ? (
-          <Like setLike={setLike} setActionTwitter={setActionTwitter} value={like} isDisable={stateQuest} />
+          <Like setLike={setLike} setActionTwitter={setActionTwitter} value={like} isDisable={handleCheckDisable()} />
         ) : (
           ""
         )}
         {activeTwitter.Hashtag || data?.twitterHashtag ? (
-          <HashTag setHashtag={setHashtag} setActionTwitter={setActionTwitter} value={hashtag} isDisable={stateQuest} />
+          <HashTag
+            setHashtag={setHashtag}
+            setActionTwitter={setActionTwitter}
+            value={hashtag}
+            isDisable={handleCheckDisable()}
+          />
         ) : (
           ""
         )}
@@ -173,7 +216,7 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
             setTokenHolder={setTokenHolder}
             title="TokenHolder"
             label="Minimum amount of tokens held"
-            isDisable={stateQuest}
+            isDisable={handleCheckDisable()}
           />
         ) : (
           ""
@@ -185,13 +228,23 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
             setTransactionActivity={setTransactionActivity}
             title="TransactionActivity"
             label="Minimum number of transactions"
-            isDisable={stateQuest}
+            isDisable={handleCheckDisable()}
           />
         ) : (
           ""
         )}
       </div>
-      {!location.pathname.includes("detail") ? (
+      {isDetail ? (
+        data?.status === "Draft" && (
+          <button
+            onClick={handleEdit}
+            style={{ backgroundColor: isEdit ? "#279EFF" : "#D83F31" }}
+            className="hover:bg-opacity-60 text-white font-medium md:font-bold py-2 px-4 md:py-3 md:px-8 rounded relative left-[50%] -translate-x-[50%] mt-4 md:mt-8 text-[16px] md:text-[20px]"
+          >
+            {isEdit ? "Save" : "Edit"}
+          </button>
+        )
+      ) : (
         <div>
           <button
             style={{ display: !stateQuest ? "none" : "" }}
@@ -219,8 +272,6 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
             </button>
           </div>
         </div>
-      ) : (
-        ""
       )}
       <ToastContainer />
     </div>
