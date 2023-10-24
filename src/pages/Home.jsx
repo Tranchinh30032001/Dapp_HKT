@@ -28,7 +28,10 @@ function Home() {
             <img className="w-[400px] h-[300px] -ml-[120px] -mt-[50px] object-cover" src={Banner} alt="banner" />
           </div>
           <div className="flex items-center gap-4 md:gap-10 mt-10">
-            <button className="btnGradient1 cursor-pointer py-2 px-4 md:py-4 md:px-10 rounded-lg text-[16px] md:text-[20px] font-normal md:font-bold text-white">
+            <button
+              onClick={() => (window.location.href = "https://plats-quest.vaix.group/")}
+              className="btnGradient1 cursor-pointer py-2 px-4 md:py-4 md:px-10 rounded-lg text-[16px] md:text-[20px] font-normal md:font-bold text-white"
+            >
               Start Earning
             </button>
             <button
