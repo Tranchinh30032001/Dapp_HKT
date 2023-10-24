@@ -57,20 +57,25 @@ function Reward({ setValue, valueSetup, valueQuest, setValueReward, data }) {
   };
 
   const handleSave = async () => {
+    console.log(checkLogin());
     if (!checkLogin()) {
       notifyError("Please connect wallet first");
       return;
     }
-    const res = await callApiCreate(valueSetup, valueQuest, {
-      rewardType,
-      network,
-      categoryToken,
-      totalReward,
-      numberWinner,
-    });
-    if (res.data.status === "success") {
-      navigate("/campaign");
-      dispatch(setSaveSuccess(true));
+    try {
+      const res = await callApiCreate(valueSetup, valueQuest, {
+        rewardType,
+        network,
+        categoryToken,
+        totalReward,
+        numberWinner,
+      });
+      if (res.data.status === "success") {
+        navigate("/campaign");
+        dispatch(setSaveSuccess(true));
+      }
+    } catch (error) {
+      notifyError(error?.response?.data?.message?.name[0]);
     }
   };
   const handleCheckDisable = () => {

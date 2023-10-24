@@ -118,18 +118,22 @@ function Quest({ setValue, valueSetup, setValueQuest, data }) {
       notifyError("Please connect wallet first");
       return;
     }
-    const res = await callApiCreate(valueSetup, {
-      twitterFollow: follow,
-      twitterRetweet: retweet,
-      twitterLike: like,
-      twitterHashtag: hashtag,
-      tokenHolder: tokenHolder,
-      transactionActivity: transactionActivity,
-    });
+    try {
+      const res = await callApiCreate(valueSetup, {
+        twitterFollow: follow,
+        twitterRetweet: retweet,
+        twitterLike: like,
+        twitterHashtag: hashtag,
+        tokenHolder: tokenHolder,
+        transactionActivity: transactionActivity,
+      });
 
-    if (res.data.status === "success") {
-      navigate("/campaign");
-      dispatch(setSaveSuccess(true));
+      if (res.data.status === "success") {
+        navigate("/campaign");
+        dispatch(setSaveSuccess(true));
+      }
+    } catch (error) {
+      notifyError(error?.response?.data?.message?.name[0]);
     }
   };
 
