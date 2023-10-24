@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import Pagination from "./common/Panigation";
 const Card = lazy(() => import("./Card"));
 
-const NUMBER_ITEM_PAGE = 8;
+const NUMBER_ITEM_PAGE = 4;
 
 function BodyQuest() {
   const res = useGetApi(routes.quest.getCollection);
