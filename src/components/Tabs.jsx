@@ -125,6 +125,7 @@ function Tabs() {
         setValueSetup={setValueSetup}
         setValueQuest={setValueQuest}
         setValueReward={setValueReward}
+        valueReward={valueReward}
       />
     ),
   };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import { Button, Avatar, Divider, Tooltip } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import metadata from "../utils/contract.json";
 
@@ -14,13 +14,10 @@ import {
 } from "../redux/stateCampaign";
 import { instanceAxios } from "../services/api-connect-wallet";
 import { useContract, useTx } from "useink";
+import { routes } from "../routes";
 
-const listLuckyMembers = [
-  "5G4URyHwDkRy29QvtofisCZhjqdjyUYMpvAUzzpBnhMNnY4z",
-  "5Cu5qz2GSd1kaQFGiuqhKvTR2K7tJsrmffpfb6DFiwWoBcqt",
-];
-
-function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQuest, setValueReward }) {
+function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQuest, setValueReward, valueReward }) {
+  const param = useParams();
   const [partyTime, setPartyTime] = useState(false);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
@@ -29,6 +26,7 @@ function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQues
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isDetail = useLocation().pathname.includes("detail");
+  const [listLuckyMembers, setListLuckyMembers] = useState([]);
   const [isPrize, setIsPrize] = useState(false);
 
   const CONTRACT_ADDRESS_ALPHE = import.meta.env.VITE_CONTRACT_ADDRESS_ALEPH;
@@ -107,11 +105,17 @@ function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQues
   }, []);
 
   const handlePrize = async () => {
-    const res = await instanceAxios.get("https://64bf79be5ee688b6250d7c34.mockapi.io/api/table-data/campaign");
-    if (res.status === 200) {
-      alpheReward.signAndSend([listLuckyMembers]);
+    try {
+      const res = await instanceAxios.get(routes.quest.getDetailCampaign(param?.id));
+      const listMembers = await res?.data?.users_reward.map((item) => item.wallet_address);
+      setListLuckyMembers(listMembers);
+      if (res.status === 200) {
+        alpheReward.signAndSend([listMembers]);
+      }
+      setIsPrize(false);
+    } catch (error) {
+      throw new Error(error);
     }
-    setIsPrize(false);
   };
 
   return (
@@ -137,22 +141,25 @@ function Leaderboard({ setValue, startDate, endDate, setValueSetup, setValueQues
           <p className="text-white text-[18px] md:text-[32px]">Seconds</p>
         </div>
       </div>
-      {isDetail && isPrize && (
-        <Button
-          onClick={handlePrize}
-          className="bg-[#279EFF] text-white text-[12px] px-4 md:text-[18px] font-semibold md:px-8 md:py-6 flex items-center border-none outline-none hover:bg-none mx-auto mt-4"
-        >
-          Prize Draw
-        </Button>
-      )}
-      {isPrize && (
+      <Button
+        style={{ opacity: isPrize ? 1 : 0.5 }}
+        disabled={!isPrize}
+        onClick={handlePrize}
+        className="bg-[#279EFF] text-white text-[12px] px-4 md:text-[18px] font-semibold md:px-8 md:py-6 flex items-center border-none outline-none hover:bg-none mx-auto mt-8"
+      >
+        Prize Draw
+      </Button>
+
+      {listLuckyMembers?.length > 0 && (
         <div>
           <h1 className="text-[20px] md:text-[28px] text-white font-semibold mt-8">List Lucky User</h1>
           <ul>
             {listLuckyMembers.map((item, index) => {
               return (
-                <li key={index} className="text-yellow-500 text-[13px] md:text-[18px] mt-2 md:ml-10">
-                  {item}
+                <li key={index} className="text-yellow-500 text-[13px] md:text-[24px] mt-2 md:ml-10">
+                  <span>
+                    {item} + {valueReward?.totalReward / valueReward?.numberWinner} {valueReward?.categoryToken}
+                  </span>
                 </li>
               );
             })}
